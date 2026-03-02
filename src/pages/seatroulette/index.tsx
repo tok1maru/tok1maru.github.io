@@ -1067,7 +1067,7 @@ export default function Home() {
                     {/* ───────────────────────────────
         ここからドラッグ & 編集可能なリスト
         ─────────────────────────────── */}
-        <div className="max-h-140" style={{   height:"50%", overflowY: "scroll", paddingRight: 10 }}>
+        <div className="max-h-140" style={{   height:"40%", overflowY: "scroll", paddingRight: 10 }}>
                     <DragDropContext
                       onDragEnd={(result) => {
                         if (!result.destination) return;
