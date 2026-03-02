@@ -89,8 +89,21 @@ export default function Home() {
 
   // フルスクリーン対応の確認ダイアログ
   const showConfirmDialog = (title: string, message: string, onConfirm: () => void) => {
-    // 常にカスタムダイアログを使用
-    setConfirmDialog({ title, message, onConfirm });
+    if (document.fullscreenElement) {
+      // フルスクリーン時はカスタムダイアログを表示
+      setConfirmDialog({ title, message, onConfirm });
+    } else {
+      // 通常時は Modal.confirm を使用
+      Modal.confirm({
+        title,
+        content: message,
+        okText: 'はい',
+        cancelText: 'キャンセル',
+        onOk() {
+          onConfirm();
+        },
+      });
+    }
   };
 
   const toggleFullscreen = () => {
@@ -111,7 +124,12 @@ export default function Home() {
   // フルスクリーン状態の変化を監視
   useEffect(() => {
     const handleFullscreenChange = () => {
-      setIsFullscreen(!!document.fullscreenElement);
+      const fs = !!document.fullscreenElement;
+      setIsFullscreen(fs);
+      const container = document.querySelector('.seatroulette-container') as HTMLElement | null;
+      if (container) {
+        container.style.overflow = fs ? 'hidden' : 'hidden';
+      }
     };
 
     document.addEventListener('fullscreenchange', handleFullscreenChange);
@@ -548,21 +566,21 @@ export default function Home() {
 
   return (
 
-    <main className="min-h-screen bg-gray-300 p-2 seatroulette-container" >
+    <main className="max-w-full max-h-full bg-gray-300 p-2 seatroulette-container" >
       {contextHolder}
       {contextHolder2}
 
 
 
 
-      <div className=" max-h-full max-w-full bg-white rounded-4xl shadow-2xl flex overflow-hidden" style={{ fontFamily: "str, sans-serif" }}>
+      <div className="bg-white rounded-4xl shadow-2xl flex overflow-hidden" style={{ fontFamily: "str, sans-serif"}}>
           <Head>
     <title>Seat Roulette</title>
     <meta name="description" content="席替えルーレット" />
   </Head>
         <Layout>
           <Sider trigger={null} collapsible collapsed={collapsed}>
-            <div className="demo-logo-vertical min-h-2" />
+            <div className="min-h-2" />
             {/* <div className="text-white text-center text-4xl" >aaaeea</div> */}
             <div className="mt-2 h-10 ml-7 mr-5 mb-3 bg-gray-300 rounded-4xl">  </div>
             <Menu
@@ -595,7 +613,7 @@ export default function Home() {
           </Sider>
           <Layout>
             <Header style={{ padding: 0, background: colorBgContainer }}>
-              <Flex justify="space-between" align="center" style={{ width: '100%' }}>
+              <Flex justify="space-between" align="center" style={{ width: '100%', flexWrap: 'wrap' }}>
                 <Flex>
                   <Button
                     type="text"
@@ -655,7 +673,7 @@ export default function Home() {
 
 
                 {mode === "setting" && (
-                  <div>
+                  <div >
 
                     <Flex gap={"small"} align="right">
                       <Title level={4}>設定</Title>
@@ -663,9 +681,9 @@ export default function Home() {
 
                     </Flex>
 
-                    <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start' }}>
+                    <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start', overflow: 'scroll' }}>
                       {/* 左: 設定パネル */}
-                      <div style={{ width: 460 }}>
+                      <div style={{ width: '100%', maxWidth: 460 }}>
                         <div style={{ marginBottom: 20 }}>
                           <Flex gap={"middle"} align="left">
                             <label>
@@ -761,7 +779,7 @@ export default function Home() {
                       </div>
 
                       {/* 右: グリッド表示 */}
-                      <div style={{ flex: 1, overflowY: 'auto', paddingRight: 8 }}>
+                      <div style={{ flex: 1, paddingRight: 8, minWidth: 0 }}>
                         <div
                           style={{
                             display: "grid",
@@ -912,14 +930,14 @@ export default function Home() {
                 */}
 
                 {mode === "list" && (
-                  <div>
+                  <div style={{    overflowY: "scroll", paddingRight: 10 }}>
                   
 
                        
 
                      
 
-                      <Flex gap={"small"} align="center">
+                      <Flex gap={"small"} align="center" >
                         <h2 style={{ fontSize: 24 }}>並び替え & 編集  (要素数 : {stringList.length})</h2>
                         
                               <Flex style={{ marginLeft: 40}} gap={"small"} align="center">
@@ -1022,7 +1040,7 @@ export default function Home() {
 
 
 
-<h3 style={{ marginTop: 20 }}>個別で追加</h3>
+                    <h3 style={{ marginTop: 20 }}>個別で追加</h3>
                     {/* 追加フォーム */}
                     <Space style={{ marginBottom: 20 }}>
                       <Input
@@ -1049,6 +1067,7 @@ export default function Home() {
                     {/* ───────────────────────────────
         ここからドラッグ & 編集可能なリスト
         ─────────────────────────────── */}
+        <div className="max-h-140" style={{   height:"50%", overflowY: "scroll", paddingRight: 10 }}>
                     <DragDropContext
                       onDragEnd={(result) => {
                         if (!result.destination) return;
@@ -1065,9 +1084,8 @@ export default function Home() {
                             ref={provided.innerRef}
                             {...provided.droppableProps}
                             style={{
-                              width: "100%",   
-                              overflowY: "auto",        // ★ スクロール有効化
-                              paddingRight: 10,         // ★ スクロールバーで内容が隠れないよう余白
+                              width: "100%",           // ★ スクロール有効化
+                              paddingRight: 10,  
                             }}
                           >
                             {stringList.map((item, index) => (
@@ -1075,6 +1093,7 @@ export default function Home() {
                                 key={index}
                                 draggableId={`string-${index}`}
                                 index={index}
+                                
                               >
                                 {(p) => (
                                   <div
@@ -1127,7 +1146,7 @@ export default function Home() {
                       </Droppable>
 
                     </DragDropContext>
-                  </div>
+                  </div></div>
                 )}
 
               </div>
