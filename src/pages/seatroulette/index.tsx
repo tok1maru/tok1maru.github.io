@@ -930,7 +930,7 @@ export default function Home() {
                 */}
 
                 {mode === "list" && (
-                  <div style={{    overflowY: "scroll", paddingRight: 10 }}>
+                  <div style={{   paddingRight: 10 ,paddingBottom: 130 }}>
                   
 
                        
@@ -1067,7 +1067,7 @@ export default function Home() {
                     {/* ───────────────────────────────
         ここからドラッグ & 編集可能なリスト
         ─────────────────────────────── */}
-        <div className="max-h-120" style={{   overflowY: "scroll", paddingRight: 10 }}>
+        <div className="max-h-120" style={{   overflowY: "scroll", paddingRight: 10}}>
                     <DragDropContext
                       onDragEnd={(result) => {
                         if (!result.destination) return;
