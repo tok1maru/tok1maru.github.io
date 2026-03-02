@@ -21,7 +21,8 @@ import {
   notification,
   Typography,
   Alert,
-  Upload
+  Upload,
+  Modal
 } from 'antd';
 import {
   MenuFoldOutlined,
@@ -29,7 +30,8 @@ import {
   UserOutlined,
   SettingOutlined,
   DeleteFilled,
-
+  FullscreenOutlined,
+  FullscreenExitOutlined,
 } from '@ant-design/icons';
 import React from "react";
 
@@ -76,7 +78,45 @@ export default function Home() {
   const [rangeEnd, setRangeEnd] = useState<number>(40);
   const [rangeOrder, setRangeOrder] = useState<"asc" | "desc">("asc");
 
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
+  // フルスクリーン内のカスタムダイアログ状態
+  const [confirmDialog, setConfirmDialog] = useState<{
+    title: string;
+    message: string;
+    onConfirm: () => void;
+  } | null>(null);
+
+  // フルスクリーン対応の確認ダイアログ
+  const showConfirmDialog = (title: string, message: string, onConfirm: () => void) => {
+    // 常にカスタムダイアログを使用
+    setConfirmDialog({ title, message, onConfirm });
+  };
+
+  const toggleFullscreen = () => {
+    const container = document.querySelector('.seatroulette-container');
+    if (!container) return;
+
+    if (!document.fullscreenElement) {
+      if (container.requestFullscreen) {
+        container.requestFullscreen().catch(() => {});
+      }
+    } else {
+      if (document.fullscreenElement) {
+        document.exitFullscreen().catch(() => {});
+      }
+    }
+  };
+
+  // フルスクリーン状態の変化を監視
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
 
   const {
     token: { colorBgContainer },
@@ -245,7 +285,8 @@ export default function Home() {
       .filter((v) => v !== -1);
 
     if (validIndexes.length === 0) return -1;
-    return validIndexes[Math.floor(Math.random() * validIndexes.length)];
+    const randomIndex = crypto.getRandomValues(new Uint32Array(1))[0] % validIndexes.length;
+    return validIndexes[randomIndex];
   };
   */
 
@@ -256,7 +297,8 @@ export default function Home() {
 
     if (emptyCells.length === 0) return null;
 
-    const target = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+    const randomIndex = crypto.getRandomValues(new Uint32Array(1))[0] % emptyCells.length;
+    const target = emptyCells[randomIndex];
     return target.i;
   };
 
@@ -453,10 +495,16 @@ export default function Home() {
         if (Array.isArray(json)) {
           setStringList(json);
         } else {
-          alert("JSON の形式が不正です（配列ではありません）");
+          messageApi.error({
+            content: 'JSON の形式が不正です（配列ではありません）',
+            duration: 3
+          });
         }
       } catch {
-        alert("JSON の読み込みに失敗しました");
+        messageApi.error({
+          content: 'JSON の読み込みに失敗しました',
+          duration: 3
+        });
       }
     };
     reader.readAsText(file);
@@ -500,14 +548,14 @@ export default function Home() {
 
   return (
 
-    <main className="min-h-screen bg-gray-300 p-2" >
+    <main className="min-h-screen bg-gray-300 p-2 seatroulette-container" >
       {contextHolder}
       {contextHolder2}
 
 
 
 
-      <div className=" max-h-screen bg-white rounded-4xl shadow-2xl flex overflow-hidden" style={{ fontFamily: "str, sans-serif" }}>
+      <div className=" max-h-full max-w-full bg-white rounded-4xl shadow-2xl flex overflow-hidden" style={{ fontFamily: "str, sans-serif" }}>
           <Head>
     <title>Seat Roulette</title>
     <meta name="description" content="席替えルーレット" />
@@ -547,20 +595,33 @@ export default function Home() {
           </Sider>
           <Layout>
             <Header style={{ padding: 0, background: colorBgContainer }}>
-              <Flex>
+              <Flex justify="space-between" align="center" style={{ width: '100%' }}>
+                <Flex>
+                  <Button
+                    type="text"
+                    icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+                    onClick={() => setCollapsed(!collapsed)}
+                    style={{
+                      fontSize: '22px',
+                      width: 64,
+                      height: 64,
+                    }}
+                  />
+
+                  <div className="mt-3 ml-5 text-black text-center text-4xl font-bold" >     {` ${stringList[currentIndex] ? `${stringList[currentIndex]}` : ""}  ${stringList[currentIndex + 1] ? `→ ${stringList[currentIndex + 1]}` : ""}  ${stringList[currentIndex + 2] ? `→ ${stringList[currentIndex + 2]}` : ""}`} </div>
+                </Flex>
+
                 <Button
                   type="text"
-                  icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-                  onClick={() => setCollapsed(!collapsed)}
+                  icon={isFullscreen ? <FullscreenExitOutlined /> : <FullscreenOutlined />}
+                  onClick={toggleFullscreen}
                   style={{
                     fontSize: '22px',
                     width: 64,
                     height: 64,
                   }}
+                  title={isFullscreen ? 'フルスクリーン解除' : 'フルスクリーン'}
                 />
-
-                <div className="mt-3 ml-5 text-black text-center text-4xl font-bold" >     {` ${stringList[currentIndex] ? `${stringList[currentIndex]}` : ""}  ${stringList[currentIndex + 1] ? `→ ${stringList[currentIndex + 1]}` : ""}  ${stringList[currentIndex + 2] ? `→ ${stringList[currentIndex + 2]}` : ""}`} </div>
-
               </Flex>
 
 
@@ -579,7 +640,7 @@ export default function Home() {
 
                 {stringList.length != (rows * cols) - banned.filter((value) => value == true).length && (
                   <Alert
-                    message="エラー"
+                    title="エラー"
                     description={`Listの要素数(${stringList.length})とマスの数(${(rows * cols) - banned.filter((value) => value == true).length})が一致していません。`}
                     type="warning"
                     showIcon />
@@ -602,102 +663,105 @@ export default function Home() {
 
                     </Flex>
 
+                    <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start' }}>
+                      {/* 左: 設定パネル */}
+                      <div style={{ width: 460 }}>
+                        <div style={{ marginBottom: 20 }}>
+                          <Flex gap={"middle"} align="left">
+                            <label>
+                              行数 :
+                              <InputNumber min={1} size="middle" changeOnWheel value={Number(rows)} onChange={(value) => setRows(Number(value))} />
+                            </label>
 
-                    <div>
+                            <label>
+                              列数 :
+                              <InputNumber min={1} size="middle" changeOnWheel value={Number(cols)} onChange={(value) => setCols(Number(value))} />
+                            </label>
+
+                            <label>
+                              ルーレット更新間隔 (ms):
+                              <InputNumber min={100}  size="middle" changeOnWheel value={Number(intervalMs)} onChange={(value) => setIntervalMs(Number(value))} />
+                            </label>
+
+                          </Flex>
+                          <Flex gap={"middle"} align="left" style={{ marginTop: 12 }}>
+                            <label>
+                              次にボタンを押す人 : 
+                              <Select size="middle" onChange={(e) => {
+                                setCurrentIndex(Number(e))
+                                console.log(e);
+                              }}
+                                options={
+                                  stringList.map((a, b) => ({
+                                    value: b,
+                                    label: `ID:${b + 1} - ${a}`
+                                  }))
+                                }
+
+                                value={`ID:${currentIndex + 1} - ${stringList[currentIndex]}`}
+                        
+                                style={{
+                                  width: 240,
+                                  cursor: "pointer",
+                                  marginLeft: 12,
+                                }} />
+
+                            </label>
+                          </Flex>
+                          <Flex gap={"middle"} align="left" style={{ marginTop: 12 }}>
+                  
+                            <label>
+                              マスの幅 :
+                              <InputNumber min={1} style={{ width: 90, marginLeft: 12 }} size="middle" changeOnWheel value={Number(width)} onChange={(value) => setwidth(Number(value))} />
+                            </label>
+
+                            <label>
+                              マスの高さ :
+                              <InputNumber min={1} style={{ width: 90, marginLeft: 12 }} size="middle" changeOnWheel value={Number(height)} onChange={(value) => setheight(Number(value))} />
+                            </label>
 
 
-                      <div style={{ marginBottom: 20 }}>
-                        <Flex gap={"middle"} align="right">
-                          <label>
-                            行数 :
-                            <InputNumber min={1} size="small" changeOnWheel value={Number(rows)} onChange={(value) => setRows(Number(value))} />
-                          </label>
+                          </Flex>
+                        </div>
 
-                          <label>
-                            列数 :
-                            <InputNumber min={1} size="small" changeOnWheel value={Number(cols)} onChange={(value) => setCols(Number(value))} />
-                          </label>
+                        <Button
+                          danger
+                          style={{ width: 120, height: 50, marginBottom: 12 }}
+                          onClick={() => {
+                            showConfirmDialog('リセット', 'リセットしますか？', () => {
+                              // 実際のリセット
+                              setGrid(Array(rows * cols).fill(null));
+                              setActiveIndex(-1)
+                              setConfirmedIndex(-1)
+                              setCurrentIndex(0);
 
-                          <label>
-                            更新間隔 (ms):
-                            <InputNumber min={1} size="middle" changeOnWheel value={Number(intervalMs)} onChange={(value) => setIntervalMs(Number(value))} />
-                          </label>
-
-                          <label>
-                            次の文字列 :
-                            <Select onChange={(e) => {
-                              setCurrentIndex(Number(e))
-                              console.log(e);
-                            }}
-                              options={
-                                stringList.map((a, b) => ({
-                                  value: b,
-                                  label: `ID:${b + 1} - ${a}`
-                                }))
+                              // 動作中なら停止
+                              if (intervalRef.current) {
+                                clearInterval(intervalRef.current);
+                                intervalRef.current = null;
                               }
+                              setIsRunning(false);
 
-                              value={`ID:${currentIndex + 1} - ${stringList[currentIndex]}`}
-                              style={{
-                                fontSize: 12,
-                                width: `200px`,
-                                padding: 0,
-                                marginTop: 0,
-                                cursor: "pointer",
-                              }} />
+                              messageApi.success({
+                                content: 'リセットしました',
+                                duration: 2
+                              });
+                            });
+                          }}
+                        >
+                          リセット
+                        </Button>
 
-                          </label>
-
-                        </Flex>
-                        <Flex gap={"middle"} align="right">
-                          <label>
-                            w :
-                            <InputNumber min={1} size="small" changeOnWheel value={Number(width)} onChange={(value) => setwidth(Number(value))} />
-                          </label>
-
-                          <label>
-                            h :
-                            <InputNumber min={1} size="small" changeOnWheel value={Number(height)} onChange={(value) => setheight(Number(value))} />
-                          </label>
-
-
-                        </Flex>
+                        <div style={{ marginTop: 8 }}>
+                          <p>※</p>
+                          <p>有効化/無効化ボタンでマスを使うか切り替えられ、</p>
+                          <p>各マスのリストから特定の人を固定できます。</p>
+                          <p>(固定された人は、抽選対象から除外されます)。</p>
+                        </div>
                       </div>
-                      <h3>セル番号設定 / 禁止マス（クリックで切替）</h3>
 
-
-
-                      <Button
-                        danger
-                        style={{ width: 120, height: 50 }}
-                        onClick={() => {
-                          if (!window.confirm("リセットしますか？")) return;
-
-                          // 実際のリセット
-                          setGrid(Array(rows * cols).fill(null));
-                          setActiveIndex(-1)
-                          setConfirmedIndex(-1)
-                          setCurrentIndex(0);
-
-                          // 動作中なら停止
-                          if (intervalRef.current) {
-                            clearInterval(intervalRef.current);
-                            intervalRef.current = null;
-                          }
-                          setIsRunning(false);
-
-                          // currentIndex を最初に戻す場合（任意）
-                          // setCurrentIndex(0);
-                        }}
-                      >
-                        リセット
-                      </Button>
-
-
-
-
-
-
-                      <div style={{ maxHeight: '60vh', overflowY: 'auto', paddingRight: 8 }}>
+                      {/* 右: グリッド表示 */}
+                      <div style={{ flex: 1, overflowY: 'auto', paddingRight: 8 }}>
                         <div
                           style={{
                             display: "grid",
@@ -738,8 +802,7 @@ export default function Home() {
                                   style={{
                                     fontSize: 12,
                                     width: `${width - 10}px`,
-                                    padding: 0,
-                                    marginTop: 0,
+                                    height: height /2,
                                     cursor: "pointer",
                                   }} />
 
@@ -751,26 +814,14 @@ export default function Home() {
                                 marginTop: 0,
                                 cursor: "pointer",
                               }} >
-                                {banned[i] ? "解除" : "禁止"}
+                                {banned[i] ? "有効化" : "無効化"}
                               </Button>
 
                             </div>
                           ))}
                         </div>
                       </div>
-
                     </div>
-
-
-
-
-
-
-
-
-
-
-
 
                   </div>
                 )}
@@ -862,15 +913,19 @@ export default function Home() {
 
                 {mode === "list" && (
                   <div>
-                    <Flex gap={"small"} align="right">
-                      <h2 style={{ marginBottom: 20 }}>String List (並び替え & 編集)</h2>
-                      要素数 : {stringList.length}
+                  
 
+                       
 
-                      <div style={{ marginBottom: 20, display: "flex", gap: 10 }}>
+                     
+
+                      <Flex gap={"small"} align="center">
+                        <h2 style={{ fontSize: 24 }}>並び替え & 編集  (要素数 : {stringList.length})</h2>
+                        
+                              <Flex style={{ marginLeft: 40}} gap={"small"} align="center">
                         {/* エクスポート */}
                         <Button type="primary" onClick={exportList}>
-                          Export JSON
+                          ファイルに出力
                         </Button>
 
                         {/* インポート */}
@@ -882,28 +937,36 @@ export default function Home() {
                             return false; // 自動アップロードを防止
                           }}
                         >
-                          <Button>Import JSON</Button>
+                          <Button>ファイルから読み込み</Button>
                         </Upload>
-                      </div>
 
 
-                      <Button
+                           <Button
                         danger
                         onClick={() => {
-                          if (window.confirm("リストをすべて削除しますか？")) {
+                          showConfirmDialog('リストを削除', 'リストをすべて削除しますか？', () => {
                             setStringList([]);
-                          }
+                            messageApi.success({
+                              content: 'リストをすべて削除しました',
+                              duration: 2
+                            });
+                          });
                         }}
-                        style={{ marginBottom: 20 }}
+                        style={{ marginLeft: 150  }}
                       >
                         すべて削除
                       </Button>
 
-                    </Flex>
+                      </Flex >
+</Flex>
+
+                      <h2 style={{ marginBottom: 20 }}>IDの部分をドラッグ&ドロップで順番を移動できます。</h2>
+
+
 
 
                     {/* 連番 追加フォーム */}
-                    <h3 style={{ marginTop: 20 }}>連番を追加（a ～ b）</h3>
+                    <h3 style={{ marginTop: 20 }}>連番を追加</h3>
 
                     <Space style={{ marginBottom: 20 }}>
                       <Input
@@ -959,9 +1022,9 @@ export default function Home() {
 
 
 
-
+<h3 style={{ marginTop: 20 }}>個別で追加</h3>
                     {/* 追加フォーム */}
-                    <Space style={{ marginLeft: 20 }}>
+                    <Space style={{ marginBottom: 20 }}>
                       <Input
                         placeholder="追加する文字列"
                         value={newString}
@@ -1002,8 +1065,7 @@ export default function Home() {
                             ref={provided.innerRef}
                             {...provided.droppableProps}
                             style={{
-                              width: "100%",
-                              maxHeight: "500px",      // ★ 固定高さ
+                              width: "100%",   
                               overflowY: "auto",        // ★ スクロール有効化
                               paddingRight: 10,         // ★ スクロールバーで内容が隠れないよう余白
                             }}
@@ -1073,6 +1135,61 @@ export default function Home() {
           </Layout>
         </Layout>
       </div>
+
+      {/* フルスクリーン内のカスタムダイアログ */}
+      {confirmDialog && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.45)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 10000,
+          }}
+          onClick={() => setConfirmDialog(null)}
+        >
+          <div
+            style={{
+              backgroundColor: '#fff',
+              borderRadius: '8px',
+              padding: '24px 32px',
+              minWidth: '360px',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+              position: 'relative',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ fontSize: '18px', fontWeight: 600, marginBottom: '16px', color: '#000' }}>
+              {confirmDialog.title}
+            </div>
+            <div style={{ fontSize: '14px', marginBottom: '24px', color: 'rgba(0, 0, 0, 0.65)', lineHeight: '1.5' }}>
+              {confirmDialog.message}
+            </div>
+            <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+              <Button
+                onClick={() => setConfirmDialog(null)}
+              >
+                キャンセル
+              </Button>
+              <Button
+                type="primary"
+                danger
+                onClick={() => {
+                  confirmDialog.onConfirm();
+                  setConfirmDialog(null);
+                }}
+              >
+                はい
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
