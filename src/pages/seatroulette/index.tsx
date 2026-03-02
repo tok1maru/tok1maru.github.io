@@ -78,8 +78,6 @@ export default function Home() {
 
 
 
-  const [timer, setTimer] = useState<number>(180);
-
   const {
     token: { colorBgContainer },
   } = theme.useToken();
@@ -165,32 +163,6 @@ export default function Home() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-
-
-
-  const timerRef = useRef<number | null>(null);
-
-  useEffect(() => {
-    timerRef.current = window.setInterval(() => {
-      setTimer((prev) => {
-        if (prev <= 1) {
-          if (timerRef.current !== null) {
-            clearInterval(timerRef.current);
-            timerRef.current = null;
-          }
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => {
-      if (timerRef.current !== null) {
-        clearInterval(timerRef.current);
-        timerRef.current = null;
-      }
-    };
-  }, []);
 
 
   // ---- 状態を localStorage に保存 ----
@@ -544,7 +516,7 @@ export default function Home() {
           <Sider trigger={null} collapsible collapsed={collapsed}>
             <div className="demo-logo-vertical min-h-2" />
             {/* <div className="text-white text-center text-4xl" >aaaeea</div> */}
-            <div className="mt-2 h-10 ml-7 mr-5 mb-3 bg-gray-300 rounded-4xl">  <div className="leading-9 text-center text-lg text-black"> {timer}</div></div>
+            <div className="mt-2 h-10 ml-7 mr-5 mb-3 bg-gray-300 rounded-4xl">  </div>
             <Menu
               theme="dark"
               mode="inline"
