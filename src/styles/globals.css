@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Google Font import */
+@import url('https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700&display=swap');
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
@@ -8,7 +11,7 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: 'M PLUS Rounded 1c', sans-serif;
   --font-mono: var(--font-geist-mono);
 }
 
@@ -19,37 +22,7 @@
   }
 }
 
-@font-face {
-  font-family: 'str';
-  src: url('/fonts/str.ttf') format('truetype');
-  font-weight: normal;
-  font-style: normal;
-}
-body {
-  font-family: 'str';
+html, body, * {
+  font-family: 'M PLUS Rounded 1c', sans-serif !important;
 }
 
-.ant-btn {
-  font-family: 'str';
-}
-
-
-
-
-
-@font-face {
-  font-family: "MyFont";
-  src: url("/fonts/str.ttf") format("truetype");
-  font-weight: normal;
-  font-style: normal;
-  font-display: swap;
-}
-
-html, body {
-  font-family: "MyFont", sans-serif !important;
-}
-
-
-* {
-  font-family: "MyFont", sans-serif !important;
-}
