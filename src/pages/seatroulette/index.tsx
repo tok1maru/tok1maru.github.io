@@ -483,7 +483,7 @@ export default function Home() {
         } else {
           alert("JSON の形式が不正です（配列ではありません）");
         }
-      } catch (_err) {
+      } catch {
         alert("JSON の読み込みに失敗しました");
       }
     };

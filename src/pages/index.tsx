@@ -17,13 +17,6 @@ export default function Home() {
   const [playerStatus, setPlayerStatus] = useState<{ name: string; skill:string; skill1:string; skill2:string;hp: string; maxhp: string; mp: string; maxmp: string; attack:string; defend:string; crit:string; critdmg:string; coins:string; exp:string; maxexp:string; level:string; hpreg:string; mpreg:string; skillpoint:string; } | null>(null);
   const [messageApi, contextHolder,] = message.useMessage();
 
-  const success = () => {
-    messageApi.open({
-      type: 'success',
-      content: 'This is a success message',
-      duration:2
-    });
-  };
   const listupdatecomplate = () => {
     messageApi.open({
       type: 'success',
@@ -46,6 +39,7 @@ export default function Home() {
     });
   };
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const socket = new WebSocket("ws://localhost:3000");
     socketRef.current = socket;
