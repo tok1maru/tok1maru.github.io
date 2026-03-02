@@ -697,64 +697,66 @@ export default function Home() {
 
 
 
-                      <div
-                        style={{
-                          display: "grid",
-                          gridTemplateColumns: `repeat(${cols}, ${width}px)`,
-                          gap: 5,
-                          marginBottom: 20,
-                        }}
-                      >
-                        {grid.map((v, i) => (
-                          <div
-                            key={i}
-                            style={{
-                              width: width,
-                              height: height,
-                              border: "1px solid #333",
-                              display: "flex",
-                              justifyContent: "center",
-                              alignItems: "center",
-                              background: banned[i] ? "#ff8f8f" : "#fafafa",
-                              cursor: "pointer",
-                              fontSize: 18,
-                              flexDirection: "column",
-                            }}
-                          >
-                            {/* 禁止マス */}
-                            {banned[i] ? (
-                              <span>×</span>
-                            ) : (
-                              <Select onChange={(e) => changeCellValue(i, e)}
-                                options={
-                                  stringList.map((a) => ({
-                                    value: a,
-                                    label: `${a}`
-                                  })).concat([{ value: "", label: "null" }])
+                      <div style={{ maxHeight: '60vh', overflowY: 'auto', paddingRight: 8 }}>
+                        <div
+                          style={{
+                            display: "grid",
+                            gridTemplateColumns: `repeat(${cols}, ${width}px)`,
+                            gap: 5,
+                            marginBottom: 20,
+                          }}
+                        >
+                          {grid.map((v, i) => (
+                            <div
+                              key={i}
+                              style={{
+                                width: width,
+                                height: height,
+                                border: "1px solid #333",
+                                display: "flex",
+                                justifyContent: "center",
+                                alignItems: "center",
+                                background: banned[i] ? "#ff8f8f" : "#fafafa",
+                                cursor: "pointer",
+                                fontSize: 18,
+                                flexDirection: "column",
+                              }}
+                            >
+                              {/* 禁止マス */}
+                              {banned[i] ? (
+                                <span>×</span>
+                              ) : (
+                                <Select onChange={(e) => changeCellValue(i, e)}
+                                  options={
+                                    stringList.map((a) => ({
+                                      value: a,
+                                      label: `${a}`
+                                    })).concat([{ value: "", label: "null" }])
 
-                                }
-                                value={v === null ? undefined : v}
-                                style={{
-                                  fontSize: 12,
-                                  width: `${width - 10}px`,
-                                  padding: 0,
-                                  marginTop: 0,
-                                  cursor: "pointer",
-                                }} />
+                                  }
+                                  value={v === null ? undefined : v}
+                                  style={{
+                                    fontSize: 12,
+                                    width: `${width - 10}px`,
+                                    padding: 0,
+                                    marginTop: 0,
+                                    cursor: "pointer",
+                                  }} />
 
-                            )}
-                            <Button color={banned[i] ? "green" : "red"} variant="outlined" onClick={() => toggleBan(i)} style={{
-                              fontSize: 12,
-                              width: `${width / 2}px`,
-                              padding: 0,
-                              marginTop: 0,
-                              cursor: "pointer",
-                            }} >
-                              {banned[i] ? "解除" : "禁止"}
-                            </Button>
+                              )}
+                              <Button color={banned[i] ? "green" : "red"} variant="outlined" onClick={() => toggleBan(i)} style={{
+                                fontSize: 12,
+                                width: `${width / 2}px`,
+                                padding: 0,
+                                marginTop: 0,
+                                cursor: "pointer",
+                              }} >
+                                {banned[i] ? "解除" : "禁止"}
+                              </Button>
 
-                          </div>
-                        ))}
+                            </div>
+                          ))}
+                        </div>
                       </div>
 
                     </div>
