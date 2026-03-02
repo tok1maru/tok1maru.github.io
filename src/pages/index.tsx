@@ -39,7 +39,16 @@ export default function Home() {
     });
   };
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const send = (type: string, message: string) => {
+    if (!message.trim()) return;
+    if (socketRef.current?.readyState === WebSocket.OPEN) {
+      socketRef.current.send(JSON.stringify({ type, message }));
+    } else {
+   
+      unconnecterror()
+    }
+  };
+
   useEffect(() => {
     const socket = new WebSocket("ws://localhost:3000");
     socketRef.current = socket;
@@ -93,17 +102,7 @@ export default function Home() {
     };
 
     return () => socket.close();
-  }, []);
-
-  const send = (type: string, message: string) => {
-    if (!message.trim()) return;
-    if (socketRef.current?.readyState === WebSocket.OPEN) {
-      socketRef.current.send(JSON.stringify({ type, message }));
-    } else {
-   
-      unconnecterror()
-    }
-  };
+  }, [send]);
 
   return (
 
