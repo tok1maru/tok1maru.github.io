@@ -5,7 +5,6 @@ import { useState, useRef, useEffect } from "react";
 
 
 
-import Image from 'next/image'
 
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import {
@@ -20,36 +19,15 @@ import {
   Menu,
   theme,
   notification,
-  Segmented,
   Typography,
-  List,
-  Badge,
-  Spin,
-  Divider,
-  Modal,
   Alert,
-  Switch,
-  ConfigProvider,
-  Drawer,
-  Tooltip,
   Upload
 } from 'antd';
-import type { DrawerProps } from 'antd';
 import {
   MenuFoldOutlined,
   MenuUnfoldOutlined,
-  UploadOutlined,
   UserOutlined,
-  VideoCameraOutlined,
-  BorderBottomOutlined,
-  BorderTopOutlined,
-  RadiusBottomleftOutlined,
-  RadiusBottomrightOutlined,
-  RadiusUpleftOutlined,
-  RadiusUprightOutlined,
-  LoadingOutlined,
   SettingOutlined,
-  QuestionOutlined,
   DeleteFilled,
 
 } from '@ant-design/icons';
