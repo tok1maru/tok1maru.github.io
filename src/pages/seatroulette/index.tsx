@@ -58,7 +58,7 @@ export default function Home() {
 
 
 
-  const [mode, setMode] = useState<String>("game");
+  const [mode, setMode] = useState<string>("game");
 
 
   const [messageApi, contextHolder] = message.useMessage();
@@ -66,7 +66,7 @@ export default function Home() {
 
   const { Header, Sider, Content } = Layout;
   const [collapsed, setCollapsed] = useState(true);
-  const { Text, Link, Title } = Typography;
+  const { Title } = Typography;
 
 
   const [confirmedIndex, setConfirmedIndex] = useState<number | null>(null);
@@ -81,7 +81,7 @@ export default function Home() {
   const [timer, setTimer] = useState<number>(180);
 
   const {
-    token: { colorBgContainer, borderRadiusLG },
+    token: { colorBgContainer },
   } = theme.useToken();
 
 
@@ -265,6 +265,8 @@ export default function Home() {
 
 
   // ランダムな空きセル（禁止マス除外）
+  // NOTE: not currently used; kept for future reference
+  /*
   const getRandomAvailableIndex = () => {
     const validIndexes = grid
       .map((v, i) => (v === null && !banned[i] ? i : -1))
@@ -273,6 +275,7 @@ export default function Home() {
     if (validIndexes.length === 0) return -1;
     return validIndexes[Math.floor(Math.random() * validIndexes.length)];
   };
+  */
 
   const getRandomEmptyCell = () => {
     const emptyCells = grid
@@ -480,7 +483,7 @@ export default function Home() {
         } else {
           alert("JSON の形式が不正です（配列ではありません）");
         }
-      } catch (err) {
+      } catch (_err) {
         alert("JSON の読み込みに失敗しました");
       }
     };
@@ -963,7 +966,7 @@ export default function Home() {
                         onClick={() => {
                           if (isNaN(rangeStart) || isNaN(rangeEnd)) return;
 
-                          let newItems: string[] = [];
+                          const newItems: string[] = [];
 
                           if (rangeOrder === "asc") {
                             for (let i = rangeStart; i <= rangeEnd; i++) newItems.push(String(i));
